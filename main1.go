@@ -56,7 +56,11 @@ func main() {
 	subRStempMap[2] = static.R3
 
 	app := app.New()
+	//app.
 
+	//app.Settings().SetTheme(theme.LightTheme())
+	//
+	//w := app.NewWindow("Hello")
 	w1 := app.NewWindow("Canvas")
 	si := fyne.Size{
 		Width:  32 * 20,
@@ -64,6 +68,8 @@ func main() {
 	}
 
 	w1.Resize(si)
+	//can := canvas.NewImageFromImage(c.Image)
+	//var container *fyne.Container
 	dir := "D"
 	go func() {
 		i := 1
@@ -74,31 +80,83 @@ func main() {
 			var obj fyne.Resource
 			obj = stepMap[dir][num]
 
-			//初始化资源
 			can := canvas.NewImageFromResource(obj)
-			//初始化容器
-			container := fyne.NewContainer()
-			container.Resize(si)
-			//容器加到windows里
-			w1.SetContent(container)
-			//加布局，设置资源大小
-			container.Layout = layout.NewFixedGridLayout(fyne.NewSize(32, 48))
+			//can.Move(fyne.Position{100, 200})
 			//
-			p := can.Position()
-			p.Add(fyne.Position{p.X, i + 122})
+			//lay := layout.NewGridLayout(2)
+			//if i > 1 {
+			//	pos := container.Position()
+			//	container.Move(fyne.Position{pos.X, i + 1})
+			//	fmt.Println(pos.X, pos.Y, i)
+			//}
+			//container = fyne.NewContainerWithLayout(lay, can)
+			//背景
+			//先画第一张
+			//第二张到m=ove前都要隐藏
+			container := fyne.NewContainer()
+			w1.SetContent(container)
+			container.Layout = layout.NewFixedGridLayout(fyne.NewSize(32, 48))
 			container.AddObject(can)
-			can.Move(fyne.Position{p.X, i + 1})
+
 			pos := container.Position()
-			//container.Move(fyne.Position{pos.X, i + 1})
-			fmt.Println("container", pos.X, pos.Y)
-			fmt.Println("obj pos is ", p.X, p.Y)
-			fmt.Println("container size is", container.Size())
-			fmt.Println("obj size is ", can.Size())
+
+			//如果大于等于height 那就转
+			if i+1 >= si.Height-48 {
+				dir = "R"
+				container.Move(fyne.Position{pos.X + i, si.Height - 48})
+			} else {
+
+				container.Move(fyne.Position{pos.X, i + 1})
+			}
+			fmt.Println(pos.X, pos.Y)
+			////container.Show()
+			//
+			////container.Hide()
+			////container.Hide()
+			//w1.Show()
+			//po := container.Position()
+			//fmt.Println("----")
 			i++
 		}
 	}()
 
 	w1.ShowAndRun()
+
+	//w.SetContent(widget.NewVBox(
+	//
+	//	widget.NewLabel("Hello Fyne!"),
+	//	widget.NewButton("Quit", func() {
+	//		app.Quit()
+	//
+	//	}),
+	//
+	//	widget.NewCheck("check", func(b bool) {
+	//		if b {
+	//			//app.Quit()
+	//		}
+	//	}),
+	//	widget.NewButton("quit", func() {
+	//		cnf := dialog.NewConfirm("ConfirmINfo", "Are you sure to exit?", func(b bool) {
+	//			if b {
+	//				w1.Show()
+	//			}
+	//		}, w)
+	//		cnf.SetConfirmText("Yes")
+	//		cnf.SetDismissText("NOOOO")
+	//		cnf.Show()
+	//	}),
+	//	widget.NewTabContainer(
+	//		widget.NewTabItem("Box", makeBoxLayout()),
+	//	),
+	//))
+	//
+	//si := fyne.Size{
+	//	Width:  800,
+	//	Height: 600,
+	//}
+	//w.Resize(si)
+	//
+	//w.ShowAndRun()
 
 }
 
