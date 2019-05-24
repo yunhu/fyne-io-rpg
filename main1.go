@@ -74,7 +74,7 @@ func main() {
 	go func() {
 		i := 1
 		for i > 0 {
-			t := time.Tick(90 * time.Millisecond)
+			t := time.Tick(10 * time.Millisecond)
 			<-t
 			num := i % 2
 			var obj fyne.Resource

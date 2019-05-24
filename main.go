@@ -59,47 +59,125 @@ func main() {
 
 	w1 := app.NewWindow("Canvas")
 	si := fyne.Size{
-		Width:  32 * 20,
-		Height: 48 * 10,
+		Width:  8 * 20,
+		Height: 16 * 10,
 	}
 
 	w1.Resize(si)
+	var can *canvas.Image
+
 	dir := "D"
+	//初始位置 放入通道里
+	chPost := make(chan fyne.Position, 1)
+	chPost <- fyne.Position{0, 0}
+	//go func(c chan fyne.Position) {
+	//	h := <-c
+	//	h.Y += 1
+	//	go func() {
+	//		c <- h
+	//	}()
+	//}(chPost)
+	hsize := fyne.NewSize(32, 48)
 	go func() {
-		i := 1
-		for i > 0 {
-			t := time.Tick(90 * time.Millisecond)
+		i := 0
+		for {
+			t := time.Tick(30 * time.Millisecond)
 			<-t
 			num := i % 2
 			var obj fyne.Resource
 			obj = stepMap[dir][num]
 
 			//初始化资源
-			can := canvas.NewImageFromResource(obj)
-			//初始化容器
+			can = canvas.NewImageFromResource(obj)
+			//widget.NewVBox()
+			//要移动容器
+			//fmt.Println("container", pos.X, pos.Y)
 			container := fyne.NewContainer()
-			container.Resize(si)
-			//容器加到windows里
+			container.Layout = layout.NewFixedGridLayout(hsize)
+			//container.Layout = layout.NewMaxLayout()
 			w1.SetContent(container)
-			//加布局，设置资源大小
-			container.Layout = layout.NewFixedGridLayout(fyne.NewSize(32, 48))
-			//
-			p := can.Position()
-			p.Add(fyne.Position{p.X, i + 122})
 			container.AddObject(can)
-			can.Move(fyne.Position{p.X, i + 1})
-			pos := container.Position()
-			//container.Move(fyne.Position{pos.X, i + 1})
-			fmt.Println("container", pos.X, pos.Y)
-			fmt.Println("obj pos is ", p.X, p.Y)
-			fmt.Println("container size is", container.Size())
-			fmt.Println("obj size is ", can.Size())
+			go func() {
+				conPos := <-chPost
+				fmt.Println(conPos.X, conPos.Y)
+				container.Move(fyne.Position{conPos.X, conPos.Y})
+				p := container.Position()
+				ndir, np := getDir(p, si, hsize, dir)
+				fmt.Println(ndir, np)
+				dir = ndir
+
+				go func() {
+					chPost <- np
+				}()
+			}()
 			i++
+
 		}
 	}()
 
 	w1.ShowAndRun()
 
+}
+func getDir(p fyne.Position, size fyne.Size, hsize fyne.Size, d string) (dir string, newP fyne.Position) {
+
+	//当前位置是p
+	//窗器大小是size
+	//人物大小是hsize
+	// x = 159 - 32 = 127,0 ~127
+	// y = 159  - 48 = 111,0~111
+
+	// D X 不变，y++
+	// U x不变 y--
+
+	// R Y不变 x++
+	// L Y不变 x--
+
+	nsize := size
+	nsize.Width = size.Width - hsize.Width - 1
+	nsize.Height = size.Height - hsize.Height - 1
+
+	switch d {
+	case "D":
+
+		if p.Y < nsize.Height && p.X < nsize.Width {
+			p.Y += 1
+			return d, p
+		}
+
+		if p.Y == nsize.Height {
+			if p.X == 0 {
+				d = "R"
+				p.X += 1
+			} else if p.X == nsize.Width {
+				d = "L"
+				p.X -= 1
+			} else {
+				if d == "R" {
+					p.X += 1
+				}
+				if d == "L" {
+					p.X -= 1
+				}
+			}
+		}
+
+	case "U":
+
+	case "R":
+		if p.Y == nsize.Height && p.X == nsize.Width {
+			d = "U"
+			p.Y -= 1
+		}
+		if p.Y == 0 && p.X == nsize.Width {
+			d = "L"
+			p.X -= 1
+		}
+
+	case "L":
+
+	}
+
+	return d, p
 }
 
 //右转
